@@ -1,0 +1,33 @@
+name: Build .NET MAUI App
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x' # or your required version
+
+      - name: Restore dependencies
+        run: dotnet restore
+        working-directory: .Net App/9.0/Tutorials/CreateNetMauiApp/code
+
+      - name: Build MAUI app
+        run: dotnet build --configuration Release
+        working-directory: .Net App/9.0/Tutorials/CreateNetMauiApp/code
+
+      # Optional: Publish for Windows (uncomment if needed)
+      # - name: Publish MAUI app for Windows
+      #   run: dotnet publish -f:net8.0-windows10.0.19041.0 --configuration Release --output ./publish
+      #   working-directory: .Net App/9.0/Tutorials/CreateNetMauiApp/code
