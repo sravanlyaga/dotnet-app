@@ -2,9 +2,9 @@ name: Build .NET MAUI App
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, feature/gha ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, feature/gha ]
 
 jobs:
   build:
