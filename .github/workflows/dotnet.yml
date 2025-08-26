@@ -1,25 +1,47 @@
+name: Build MAUI project (no solution)
+
+on:
+  push:
+    branches: [ "main", "feature/gha" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch: {}
+
+env:
+  # <<< REPLACE if your project path is different; keep quotes for spaces >>>
+  PROJ: ".Net App/9.0/Tutorials/CreateNetMauiApp/code/Notes.csproj"
+
 jobs:
   build:
     runs-on: windows-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
-        with: { dotnet-version: "8.0.x" }
+      - name: Checkout code
+        uses: actions/checkout@v4
 
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      # MAUI workloads are NOT preinstalled on runners
       - name: Install MAUI workloads (Windows)
-        run: dotnet workload install maui maui-windows
-
-      - name: Find MAUI project file
-        id: findproj
-        shell: pwsh
         run: |
-          $proj = Get-ChildItem -Recurse -Filter *.csproj | Where-Object { $_.FullName -match 'Notes\.csproj' } | Select-Object -First 1
-          if (-not $proj) { $proj = Get-ChildItem -Recurse -Filter *.csproj | Select-Object -First 1 }
-          if (-not $proj) { throw "No .csproj found." }
-          echo "PROJ=$($proj.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
+          dotnet workload install maui maui-windows
+          dotnet workload list
 
-      - name: Restore
-        run: dotnet restore "$env:PROJ"
+      - name: Restore (project)
+        run: dotnet restore "${{ env.PROJ }}"
 
-      - name: Build
-        run: dotnet build "$env:PROJ" -c Release --no-restore
+      - name: Build (project, Release)
+        run: dotnet build "${{ env.PROJ }}" -c Release --no-restore
+
+      # OPTIONAL: create a Windows package and upload as artifact
+      # - name: Publish (Windows)
+      #   run: dotnet publish "${{ env.PROJ }}" -f net8.0-windows10.0.19041.0 -c Release -o "${{ github.workspace }}\publish"
+      #
+      # - name: Upload artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: maui-publish
+      #     path: "${{ github.workspace }}\publish"
